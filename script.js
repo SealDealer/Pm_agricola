@@ -3,20 +3,24 @@ let activeResourceFields = [];
 
 class ResourceField {
 
-    constructor(type, min, max, appearTime, endTime) {
+    constructor(type, appearTime, avgTime, devTime) {
         this.type = type;
-        this.min = min;
-        this.max = max;
+        this.min = 1;
+        this.max = 1;
         this.appearTime = appearTime;
-        this.endTime = endTime;
+        this.endTime = 99999;
         this.numberOfItems = 0;  // Initialize numberOfItems, but it will be changed at runtime
+        this.maxTime = avgTime + devTime;
+        this.minTime = avgTime - devTime;
+        this.timeToNext = 0;
+        this.getNewTime();
     }
 
     // Function to add items based on normal distribution
     addItems() {
         // Generate a normally distributed number of items between min and max
         const mean = (this.min + this.max) / 2;
-        const stdDev = (this.max - this.min) / 6;  // Standard deviation (spread)
+        const stdDev = (this.max - this.min) / 2;  // Standard deviation (spread)
 
         // Box-Muller transform to generate normally distributed numbers
         const u1 = Math.random();
@@ -31,6 +35,33 @@ class ResourceField {
 
         // Add the calculated number of items to the field
         this.numberOfItems += numItems;
+    }
+
+    nextMinute(){
+        this.timeToNext--;
+        if(this.timeToNext == 0){
+            this.numberOfItems++;
+            this.getNewTime();
+        }
+    }
+
+    getNewTime(){
+        const mean = (this.minTime + this.maxTime) / 2;
+        const stdDev = (this.maxTime - this.minTime) / 2;  // Standard deviation (spread)
+
+        // Box-Muller transform to generate normally distributed numbers
+        const u1 = Math.random();
+        const u2 = Math.random();
+        const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+
+        // Apply the distribution and round the result to the nearest integer
+        let time = Math.round(mean + z0 * stdDev);
+
+        // Ensure the number of items is between min and max
+        time = Math.max(this.minTime, Math.min(this.maxTime, time));
+
+        // Add the calculated number of items to the field
+        this.timeToNext = time;
     }
 }
 
@@ -53,12 +84,12 @@ function resourceType() {
     resourceTypeValue = input.value;
 }
 
-function minTime() {
-    const input = document.getElementById("minTime");
+function avgItems() {
+    const input = document.getElementById("AvgItems");
     minTimeValue = input.value;
 }
 
-function maxTime() {
+function devTime() {
     const input = document.getElementById("maxTime");
     maxTimeValue = input.value;
 }
@@ -71,11 +102,12 @@ document.getElementById('addButton').addEventListener('click', function(event) {
 function submit() {
     // Retrieve the input values
     const resourceTypeValue = document.getElementById('resourceType').value;
-    const minTimeValue = parseInt(document.getElementById('minTime').value, 10);
-    const maxTimeValue = parseInt(document.getElementById('maxTime').value, 10);
+    const avgTime = parseInt(document.getElementById('AvgTime').value, 10);
+    const devTime = parseInt(document.getElementById('DevTime').value, 10);
+    
 
     // Create a new ResourceField using the form values
-    const newResource = new ResourceField(resourceTypeValue, minTimeValue, maxTimeValue, 0, 999999);
+    const newResource = new ResourceField(resourceTypeValue, 0,avgTime,devTime);
 
     // Add the new resource to the active fields array
     activeResourceFields.push(newResource);
@@ -86,7 +118,7 @@ function submit() {
 
 // Function to handle 'Start' button click
 function Start() {
-    const siteNumberValue = document.getElementById('siteNumber').value;
+    const siteNumberValue =  1;
     const startTimeValue = document.getElementById('startTime').value;
 
     // Get the appropriate resource array based on site number
@@ -104,7 +136,7 @@ function Start() {
         getCurrentFields(resourceArray); // First call immediately after timeout
         setInterval(() => {
             getCurrentFields(resourceArray); // Subsequent calls every minute
-        }, 60000);
+        }, 1000);
     }, msUntilNextMinute);
     alert("Start!");
 }
@@ -147,13 +179,13 @@ function getCurrentFields(array) {
     // Add new active resources
     newResources.forEach(resource => {
         activeResourceFields.push(resource);
-        resource.addItems(); // Only add items when newly activated
+        resource.nextMinute(); // Only add items when newly activated
     });
 
     // Add items to existing active resources (excluding just-added)
     activeResourceFields.forEach(resource => {
         if (!newResources.includes(resource)) {
-            resource.addItems();
+            resource.nextMinute();
         }
     });
 
@@ -176,7 +208,7 @@ function renderResources() {
 
         // Add a <p> element showing the resource type (name)
         const nameElement = document.createElement('p');
-        nameElement.textContent = resource.type;
+        nameElement.textContent = resource.type +': '+resource.numberOfItems;
         resourceDiv.appendChild(nameElement);
 
         // Create and configure the canvas
@@ -207,6 +239,7 @@ function renderResources() {
         const collectBtn = document.createElement('button');
         collectBtn.textContent = 'Collect';
         collectBtn.onclick = () => {
+            alert(resource.numberOfItems + " surovin posbíráno");
             resource.numberOfItems = 0;
             renderResources(); // Refresh UI
         };
@@ -217,7 +250,12 @@ function renderResources() {
         cancelBtn.textContent = 'Cancel';
         cancelBtn.onclick = () => {
             resource.endTime = 0;
-            activeResourceFields = activeResourceFields.filter(r => r !== resource);
+            if(activeResourceFields.length == 1){
+                activeResourceFields = [];
+            }
+            else{
+                activeResourceFields = activeResourceFields.filter(r => r !== resource);
+            }
             renderResources(); // Refresh UI
         };
         resourceDiv.appendChild(cancelBtn);
@@ -248,7 +286,7 @@ function getDateFromTime(timeString) {
 // - endTime:      Game time (in minutes) when the resource disappears
 
 const FieldLibrary = [
-    [new ResourceField('Wood', 2, 5, 0, 10)], // Station 1
+    [],                                         // Station 1
     [],                                       // Station 2
     []                                        // Station 3
 ];

@@ -57,12 +57,8 @@ button:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: transform 0.2s;
 }
 
-.resource-field:hover {
-    transform: translateY(-4px);
-}
 
 .resource-field p {
     font-weight: bold;
@@ -78,35 +74,6 @@ button:hover {
 }
 
 /* Individual resource types */
-.resource-field.wood {
-    background-color: #ffe4b5; /* Light golden brown */
-    border-color: #d4a15a; /* Darker brown */
-}
-
-.resource-field.stone {
-    background-color: #d3d3d3; /* Light gray */
-    border-color: #808080; /* Gray */
-}
-
-.resource-field.iron {
-    background-color: #b0c4de; /* Light steel blue */
-    border-color: #4682b4; /* Steel blue */
-}
-
-.resource-field.food {
-    background-color: #ffebcd; /* Blanched almond */
-    border-color: #f4a300; /* Darker yellow-orange */
-}
-
-.resource-field.water {
-    background-color: #add8e6; /* Light blue */
-    border-color: #4682b4; /* Steel blue */
-}
-
-.resource-field.gold {
-    background-color: #ffd700; /* Gold */
-    border-color: #b8860b; /* Dark goldenrod */
-}
 
 /* Common button styles */
 .resource-field button {
