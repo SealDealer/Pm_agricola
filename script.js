@@ -262,6 +262,15 @@ function renderResources() {
         };
         resourceDiv.appendChild(cancelBtn);
 
+                // Create Cancel button
+        const oneBtn = document.createElement('button');
+        oneBtn.textContent = '+1';
+        oneBtn.onclick = () => {
+            resource.numberOfItems++;
+            renderResources(); // Refresh UI
+        };
+        resourceDiv.appendChild(oneBtn);
+
         container.appendChild(resourceDiv);
     });
 }
