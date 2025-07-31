@@ -3,7 +3,7 @@ let activeResourceFields = [];
 
 class ResourceField {
 
-    constructor(type, appearTime, avgTime, devTime) {
+    constructor(type, appearTime, avgTime, devTime, tier) {
         this.type = type;
         this.min = 1;
         this.max = 1;
@@ -14,6 +14,7 @@ class ResourceField {
         this.minTime = avgTime - devTime;
         this.timeToNext = 0;
         this.getNewTime();
+        this.tier = tier;
     }
 
     // Function to add items based on normal distribution
@@ -104,10 +105,11 @@ function submit() {
     const resourceTypeValue = document.getElementById('resourceType').value;
     const avgTime = parseInt(document.getElementById('AvgTime').value, 10);
     const devTime = parseInt(document.getElementById('DevTime').value, 10);
+    const tier = parseInt(document.getElementById('Tier').value, 10);
     
 
     // Create a new ResourceField using the form values
-    const newResource = new ResourceField(resourceTypeValue, 0,avgTime,devTime);
+    const newResource = new ResourceField(resourceTypeValue, 0,avgTime,devTime,tier);
 
     // Add the new resource to the active fields array
     activeResourceFields.push(newResource);
@@ -208,7 +210,7 @@ function renderResources() {
 
         // Add a <p> element showing the resource type (name)
         const nameElement = document.createElement('p');
-        nameElement.textContent = resource.type +': '+resource.numberOfItems;
+        nameElement.textContent = resource.type +': '+resource.numberOfItems+", tier: "+resource.tier;
         resourceDiv.appendChild(nameElement);
 
         // Create and configure the canvas
